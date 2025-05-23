@@ -21,14 +21,19 @@ type pcieInfo struct {
 }
 
 func main() {
-	CheckRoot()
+	// CheckRoot()
 	var reset bool
 	var gpuIndex int
 	var pcieWidth bool
+	var miniFan bool
+	var fanSpeed int
 
 	flag.BoolVar(&reset, "r", false, "Reset fan speed to default")
-	flag.IntVar(&gpuIndex, "i", -1, "Specify GPU index (default is all GPUs)")
+	flag.IntVar(&gpuIndex, "i", -1, "Specify GPU index, if not means all GPUs")
+	flag.BoolVar(&miniFan, "m", false, "mini gpu fans speed")
+	flag.IntVar(&fanSpeed, "f", 100, "Specify fan speed, range from 0 to 100")
 	flag.BoolVar(&pcieWidth, "p", false, "show PCIe width and speed")
+
 	flag.Parse()
 
 	ret := nvml.Init()
@@ -71,8 +76,10 @@ func main() {
 			ResetGPU(device)
 			// 重置风扇转速（假设重置为默认值）
 			ResetGPUFanSpeed(device, -1)
+		} else if miniFan {
+			SetGPUFanSpeed(device, 0, -1)
 		} else {
-			SetGPUFanSpeed(device, 100, -1)
+			SetGPUFanSpeed(device, fanSpeed, -1)
 		}
 	}
 	if pcieWidth && len(errorPcieInfos) > 0 {
