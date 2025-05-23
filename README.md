@@ -25,14 +25,19 @@ sudo ./gpu_check_pcie -p
 ./gpu_check_pcie -h
 ```
 ```txt
+  -f int
+        Specify fan speed, range from 0 to 100 (default 100)
   -i int
         Specify GPU index, if not means all GPUs (default -1)
+  -m    mini gpu fans speed
   -p    show PCIe width and speed
   -r    Reset fan speed to default
 ```
 
 ### 示例
 1. 初始化所有风扇转速
+
+初始化的内容为：持久化SetPersistenceMode，重置核心和内存的频率（ResetGpuLockedClocks和ResetMemoryLockedClocks），最好再重置风扇转速ResetGPUFanSpeed。
 ```sh
 sudo ./gpu_check_pcie -r
 ```
@@ -72,4 +77,24 @@ sudo ./gpu_check_pcie -r -i 0
 ```txt
 Number of devices: 2
 Reset fan speed at all fans for GPU 0
+```
+
+5. 手动将某个GPU的风扇转速设置为最小值
+```sh
+sudo ./gpu_check_pcie -m -i 0
+```
+执行结果示意：
+```txt
+Number of devices: 1
+Set 0% fan speed at all fans for GPU 0
+```
+
+6. 手动将某个GPU的风扇转速设置为某个值
+```sh
+sudo ./gpu_check_pcie -f 50 -i 0
+```
+执行结果示意：
+```txt
+Number of devices: 1
+Set 50% fan speed at all fans for GPU 0
 ```
