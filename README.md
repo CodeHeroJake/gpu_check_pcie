@@ -54,9 +54,8 @@ sudo ./gpu_check_pcie -p
 ```
 执行结果示意：
 ```txt
-Number of devices: 2
-GPU 0: UUID=GPU-b2f19a54-e865-3a37-6893-c17f0b8c0f74, LinkWidth=16(MAX:16), LinkGeneration=1(MAX:4,Pcie: 4)
-GPU 1: UUID=GPU-6a5102da-2b6e-3f42-306c-7330bacca8fd, LinkWidth=16(MAX:16), LinkGeneration=1(MAX:4,Pcie: 4)
+Number of devices: 1
+GPU 0: BusID:00000000:86:00.0, LinkWidth=16(MAX:16), LinkGeneration=2(GPU MAX:4,Pcie MAX: 3) UUID=GPU-d9bd814a-e244-27bb-95e7-857df09af3e7
 ```
 
 3. 手动将某个GPU的风扇转速设置为最大

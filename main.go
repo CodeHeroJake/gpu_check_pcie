@@ -18,6 +18,7 @@ type pcieInfo struct {
 	LinkGeneration    int
 	MaxLinkGeneration int
 	MaxPcieGeneration int
+	PcieAddress       string
 }
 
 func main() {
@@ -86,8 +87,8 @@ func main() {
 		fmt.Println()
 		fmt.Println("-------- Error PcieInfos: -------------")
 		for _, info := range errorPcieInfos {
-			fmt.Printf("GPU %d: UUID=%s, LinkWidth=%d(MAX:%d), LinkGeneration=%d(MAX:%d,Pcie: %d)\n",
-				info.Index, info.UUID, info.LinkWidth, info.MaxLinkWidth, info.LinkGeneration, info.MaxLinkGeneration, info.MaxPcieGeneration)
+			fmt.Printf("GPU %d: BusID:%s, LinkWidth=%d(MAX:%d), LinkGeneration=%d(GPU MAX:%d,Pcie MAX: %d) UUID=%s \n",
+				info.Index, info.PcieAddress, info.LinkWidth, info.MaxLinkWidth, info.LinkGeneration, info.MaxLinkGeneration, info.MaxPcieGeneration, info.UUID)
 			device, _ := nvml.DeviceGetHandleByIndex(info.Index)
 			SetGPUFanSpeed(device, 100, -1)
 		}
@@ -228,9 +229,15 @@ func ScanGPUPcieInfo(device nvml.Device) (*pcieInfo, error) {
 	}
 
 	index, _ := device.GetIndex()
+	pcie, _ := device.GetPciInfoExt()
+	busID := pcie.BusId
+	var busIDString string = ""
+	for _, v := range busID {
+		busIDString += string(byte(v))
+	}
 
-	fmt.Printf("GPU %d: UUID=%s, LinkWidth=%d(MAX:%d), LinkGeneration=%d(MAX:%d,Pcie: %d)\n",
-		index, uuid, linkWidth, maxLinkWidth, currentLinkGeneration, maxLinkGeneration, maxPcieGeration)
+	fmt.Printf("GPU %d: BusID:%s, LinkWidth=%d(MAX:%d), LinkGeneration=%d(GPU MAX:%d,Pcie MAX: %d) UUID=%s\n",
+		index, busIDString, linkWidth, maxLinkWidth, currentLinkGeneration, maxLinkGeneration, maxPcieGeration, uuid)
 
 	if linkWidth < maxLinkWidth {
 		return &pcieInfo{Index: index,
@@ -240,7 +247,8 @@ func ScanGPUPcieInfo(device nvml.Device) (*pcieInfo, error) {
 			LinkSpeed:         linkSpeed,
 			MaxLinkGeneration: maxLinkGeneration,
 			LinkGeneration:    currentLinkGeneration,
-			MaxPcieGeneration: maxPcieGeration}, nil
+			MaxPcieGeneration: maxPcieGeration,
+			PcieAddress:       busIDString}, nil
 	}
 	return nil, nil
 }
