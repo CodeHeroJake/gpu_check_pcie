@@ -28,12 +28,16 @@ func main() {
 	var pcieWidth bool
 	var miniFan bool
 	var fanSpeed int
+	var gpcoffset int
+	var memoffset int
 
 	flag.BoolVar(&reset, "r", false, "Reset fan speed to default")
 	flag.IntVar(&gpuIndex, "i", -1, "Specify GPU index, if not means all GPUs")
-	flag.BoolVar(&miniFan, "m", false, "mini gpu fans speed")
+	flag.BoolVar(&miniFan, "min", false, "mini gpu fans speed")
 	flag.IntVar(&fanSpeed, "f", 100, "Specify fan speed, range from 0 to 100")
 	flag.BoolVar(&pcieWidth, "p", false, "show PCIe width and speed")
+	flag.IntVar(&gpcoffset, "go", 0, "gpcoffset")
+	flag.IntVar(&memoffset, "mo", 0, "memoffset")
 
 	flag.Parse()
 
@@ -62,6 +66,11 @@ func main() {
 			fmt.Println("DeviceGetHandleByIndex ", nvml.ErrorString(ret))
 			continue // 继续处理下一个设备
 		}
+		ret = device.SetPersistenceMode(nvml.FEATURE_ENABLED)
+		if ret != nvml.SUCCESS {
+			fmt.Printf("unable to enable PersistenceMode: %v", nvml.ErrorString(ret))
+			continue
+		}
 		if pcieWidth {
 			pinfo, err := ScanGPUPcieInfo(device)
 			if err != nil {
@@ -79,6 +88,30 @@ func main() {
 			ResetGPUFanSpeed(device, -1)
 		} else if miniFan {
 			SetGPUFanSpeed(device, 0, -1)
+		} else if gpcoffset >= 0 {
+			ret = device.SetGpcClkVfOffset(gpcoffset)
+			if ret != nvml.SUCCESS {
+				fmt.Println("SetGpcClkVfOffset ", nvml.ErrorString(ret))
+				continue // 继续处理下一个设备
+			}
+			getoffset, ret := device.GetGpcClkVfOffset()
+			if ret == nvml.SUCCESS {
+				fmt.Printf("setGpcClkVfOffset %d success on gpu index %d \n", getoffset, i)
+			} else {
+				fmt.Printf("setGpcClkVfOffset %d failed on gpu index %d \n", getoffset, i)
+			}
+		} else if memoffset >= 0 {
+			ret = device.SetMemClkVfOffset(memoffset)
+			if ret != nvml.SUCCESS {
+				fmt.Println("SetMemClkVfOffset ", nvml.ErrorString(ret))
+				continue // 继续处理下一个设备
+			}
+			getoffset, ret := device.GetMemClkVfOffset()
+			if ret == nvml.SUCCESS {
+				fmt.Printf("setMemClkVfOffset %d success on gpu index %d \n", getoffset, i)
+			} else {
+				fmt.Printf("setGMemClkVfOffset %d failed on gpu index %d \n", getoffset, i)
+			}
 		} else {
 			SetGPUFanSpeed(device, fanSpeed, -1)
 		}
